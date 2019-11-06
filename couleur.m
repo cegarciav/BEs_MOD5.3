@@ -40,6 +40,9 @@ for x = 2:size(video_frames, 2)
     hist_b = histogram_frames(:, 3, 6, x);
     plot_data(1, x - 1) = sum(min(hist_a, hist_b)) / sum(max(hist_a, hist_b)) * 100;
 end
+
+%%
+
 figure;
 plot(plot_data);
 
@@ -55,6 +58,40 @@ for n = 1:sub_h
         end
     end
 end
+
+%%
+
+figure;
+zone_to_plot = squeeze(complete_plot_data(3,6,:));
+plot(zone_to_plot);
+
+%%
+
+change_seuil = 35;
+change_or_not = zeros(1, size(video_frames, 2) - 1);
+for x = 1:(size(video_frames, 2) - 1)
+    change_or_not(1,x) = ( mean(complete_plot_data(:,:,x), 'all') < change_seuil );
+end
+changements = find(change_or_not);
+
+%%
+
+%{
+seuils = 0:5:50;
+changements_par_seuil = zeros(1, size(seuils, 2));
+for s = 1:size(seuils)
+    change_or_not_s = zeros(1, size(video_frames, 2) - 1);
+    for x = 1:(size(video_frames, 2) - 1)
+        change_or_not_s(1,x) = ( mean(complete_plot_data(:,:,x), 'all') < seuils(s) );
+    end
+    changements_par_seuil(1,s) = size(find(change_or_not_s), 2)
+end
+
+figure;
+plot(changements_par_seuil);
+}%
+
+
 
 
 
