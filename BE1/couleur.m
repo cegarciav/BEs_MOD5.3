@@ -46,7 +46,7 @@ for n = 1:sub_h
     end
 end
 
-% Affichage des similarités pour la division (3,6)de la vidéo
+% Affichage des similarités pour la division (3,6) de la vidéo
 figure;
 zone_to_plot = squeeze(similarite(3,6,:));
 plot(zone_to_plot);
