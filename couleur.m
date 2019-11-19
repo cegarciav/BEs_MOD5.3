@@ -1,8 +1,7 @@
-% Constants
+% Constantes
 nom_video = "Pub_C+_176_144.mp4";
 sub_h = 6;
 sub_w = 6;
-
 
 % Lecture du video
 video = VideoReader(nom_video);
@@ -10,13 +9,14 @@ video_h  = video.Height;
 video_w = video.Width;
 video_frames = struct('cdata', zeros(video_h, video_w, 3, 'uint8'));
 
-% Pour obtenir les images Ã  niveaux de gris
-k = 1;
+% Pour obtenir les images en niveaux de gris
 cell_height = floor(video_h / sub_h);
 cell_width = floor(video_w / sub_w);
 cell_pixels = cell_width * cell_height;
 histogram_frames = zeros(255, sub_h, sub_w, size(video_frames, 2));
 
+% Création des histogrammes
+k = 1;
 while hasFrame(video)
     video_frames(k).cdata = readFrame(video);
     video_frames(k).cdata = rgb2gray(video_frames(k).cdata);
@@ -41,13 +41,12 @@ for x = 2:size(video_frames, 2)
     plot_data(1, x - 1) = sum(min(hist_a, hist_b)) / sum(max(hist_a, hist_b)) * 100;
 end
 
-%%
-
 figure;
 plot(plot_data);
 
 %%
 
+% Compute all the percentages of similarities, and plot for (3,6)
 complete_plot_data = zeros(sub_h, sub_w, size(video_frames, 2) - 1);
 for n = 1:sub_h
     for m = 1:sub_w
@@ -58,8 +57,6 @@ for n = 1:sub_h
         end
     end
 end
-
-%%
 
 figure;
 zone_to_plot = squeeze(complete_plot_data(3,6,:));
