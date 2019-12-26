@@ -14,6 +14,7 @@ cell_height = floor(video_h / sub_h);
 cell_width = floor(video_w / sub_w);
 cell_pixels = cell_width * cell_height;
 
+
 % Calcul des histogrammes
 
 histogram_frames = zeros(255, sub_h, sub_w, size(video_frames, 2));
@@ -33,8 +34,8 @@ while hasFrame(video)
     frame_number = frame_number + 1;
 end
 
-% Calcul des mesures de similarité entre histogrammes successifs pour
-% chaque subdivision
+
+% Calcul des mesures de similarité entre histogrammes successifs pour chaque subdivision
 
 similarite = zeros(sub_h, sub_w, size(video_frames, 2) - 1);
 
@@ -47,6 +48,7 @@ for n = 1:sub_h
         end
     end
 end
+
 
 % Tracé des taux de précision et de rappel en fonction de différents seuils
 

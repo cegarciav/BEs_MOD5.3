@@ -6,8 +6,8 @@ cell_size = 30;
 conv = 0;
 signed = 0;
 n_bins = 9;
-video_h  = 176;
-video_w = 144;
+video_h  = 144;
+video_w = 176;
 
 
 % Lecture du video
