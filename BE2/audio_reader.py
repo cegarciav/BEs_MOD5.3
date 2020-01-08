@@ -1,24 +1,43 @@
+import matplotlib.pyplot as plt
 import scipy.io.wavfile as wav
 import numpy as np
 import os
 from random import shuffle
 
-files_folder = "spoken_digit_dataset/"
-duree_trame = 0.030
-order = 10
-omega_v = 1
-omega_d = 1
-omega_h = 1
-k = 3
-sample_size = 20 # 2000 maximum (déconseillé sur pc)
+################################################
+#                                              #
+#  Initialisation des variables et paramètres  #
+#                                              #
+################################################
 
-"""Fe, s1 = wav.read(files_folder + "0_jackson_0.wav")
-_, s2 = wav.read(files_folder + "0_jackson_5.wav")
-window_semi_size = int(Fe * duree_trame / 2)"""
+path = "spoken_digit_dataset/"
+duree_trame = 0.030
+ordre = 10
+omega_v, omega_d, omega_h = 1, 1, 1
+
+#########################################################
+#                                                       #
+#  Lecture et affichage de la forme d'onde d'un signal  #
+#                                                       #
+#########################################################
+
+def forme_onde(name):
+    Fe, s = wav.read(path + name)
+    plt.title("Signal Wave...")
+    plt.plot(s)
+    plt.show()
+    
+"""forme_onde("0_jackson_0.wav")"""
+
+#################################
+#                               #
+#  Calcul des coefficients LPC  #
+#                               #
+#################################
 
 def get_r_vector(window):
     r_vector = []
-    for index in range(order + 1):
+    for index in range(ordre + 1):
         vect_1 = window[:len(window) - index]
         vect_2 = window[index:]
         r_vector.append(sum(vect_1 * vect_2) / len(vect_1))
@@ -59,10 +78,20 @@ def lpc_coeffs_list(signal, window_semi_size):
             break
     return lpc_list
 
+"""Fe, s = wav.read(path + "0_jackson_0.wav")
+window_semi_size = int(Fe * duree_trame / 2)
+coeffs_s = lpc_coeffs_list(s, window_semi_size)"""
+
+#########################################################
+#                                                       #
+#  Lecture et affichage de la forme d'onde d'un signal  #
+#                                                       #
+#########################################################
+
 def euclidean_distance(vect1, vect2):
     return np.sqrt(sum((vect1 - vect2) ** 2))
 
-def distance_elastique(coeffs_1, coeffs_2):
+def matrice_distances(coeffs_1, coeffs_2):
     distance_matrix = np.zeros((len(coeffs_1), len(coeffs_2)))
     # on calcule la première distance (0,0)
     distance_matrix[0,0] = euclidean_distance(coeffs_1[0], coeffs_2[0])
@@ -79,19 +108,36 @@ def distance_elastique(coeffs_1, coeffs_2):
             dist_v = distance_matrix[i-1,j] + omega_v * euclidean_distance(coeffs_1[i], coeffs_2[j])
             dist_d = distance_matrix[i-1,j-1] + omega_d * euclidean_distance(coeffs_1[i], coeffs_2[j])
             distance_matrix[i,j] = min(dist_h, dist_v, dist_d)
-    # on retourne la distance optimale
-    return distance_matrix[-1,-1] / (len(coeffs_1) + len(coeffs_2))
+    # on retourne la matrice des distances
+    return distance_matrix
+
+"""Fe, s1 = wav.read(path + "0_jackson_0.wav")
+_, s2 = wav.read(path + "1_jackson_0.wav")
+window_semi_size = int(Fe * duree_trame / 2)
+coeffs_s1 = lpc_coeffs_list(s1, window_semi_size)
+coeffs_s2 = lpc_coeffs_list(s2, window_semi_size)
+matrice = matrice_distances(coeffs_s1, coeffs_s2)
+print(matrice)"""
 
 def distance_entre_signaux(s1, s2, window_semi_size):
     coeffs_1 = lpc_coeffs_list(s1, window_semi_size)
     coeffs_2 = lpc_coeffs_list(s2, window_semi_size)
-    return distance_elastique(coeffs_1, coeffs_2)
+    matrice = matrice_distances(coeffs_1, coeffs_2)
+    return matrice[-1,-1] / (len(coeffs_1) + len(coeffs_2))
 
-def chargement_donnees():
-    file_names = os.listdir(files_folder)
+#%%
+
+################################################################
+#                                                              #
+#  Classification par l'algorithme des k plus proches voisins  #
+#                                                              #
+################################################################
+
+def chargement_donnees(sample_size):
+    file_names = os.listdir(path)
     shuffle(file_names)
     file_names = file_names[:sample_size]
-    X = [ files_folder + name for name in file_names ]
+    X = [ path + name for name in file_names ]
     Y = [ int(name[0]) for name in file_names ]
     delimitation = int(0.8*len(X))
     Xapp = X[:delimitation]
@@ -99,6 +145,8 @@ def chargement_donnees():
     Xtest = X[delimitation:]
     Ytest = Y[delimitation:]
     return Xapp, np.array(Yapp), Xtest, np.array(Ytest)
+
+Xapp, Yapp, Xtest, Ytest = chargement_donnees(20)
 
 def kppv_distances(Xtest, Xapp):
     Dist = np.zeros((len(Xtest), len(Xapp)))
@@ -112,6 +160,8 @@ def kppv_distances(Xtest, Xapp):
             Dist[i,j] = distance_entre_signaux(s1, s2, window_semi_size)
     return Dist
 
+Dist = kppv_distances(Xtest, Xapp)
+
 def kppv_predict(Dist, Yapp, K):
     N = Dist.shape[0]
     Ypred = np.zeros(N, dtype=int)
@@ -123,13 +173,21 @@ def kppv_predict(Dist, Yapp, K):
 def evaluation_classifieur(Ytest, Ypred):
     return (Ytest == Ypred).sum() / Ytest.shape[0]
 
-def accuracy(Xapp, Yapp, Xtest, Ytest, K):
-    Dist = kppv_distances(Xtest, Xapp)
+def performance(K):
     Ypred = kppv_predict(Dist, Yapp, K)
-    print('Accuracy = {} !'.format(evaluation_classifieur(Ytest, Ypred)))
+    return evaluation_classifieur(Ytest, Ypred)
 
-Xapp, Yapp, Xtest, Ytest = chargement_donnees()
-accuracy(Xapp, Yapp, Xtest, Ytest, k)
+"""les_k = [ k for k in range(1,10) ]
+les_accuracy = [ performance(k) for k in les_k ]
+
+plt.xlabel('K')
+plt.ylabel('Accuracy')
+plt.title('Accuracy(K)')
+plt.plot(les_k, les_accuracy, 'ro')
+
+index_max = np.asarray(les_accuracy).argsort()[-1]
+print('La meilleure Accuracy ' + str(les_accuracy[index_max]) + ' est atteinte pour K = ' + str(les_k[index_max]))"""
+
             
         
 
