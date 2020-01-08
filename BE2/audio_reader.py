@@ -82,11 +82,11 @@ def lpc_coeffs_list(signal, window_semi_size):
 window_semi_size = int(Fe * duree_trame / 2)
 coeffs_s = lpc_coeffs_list(s, window_semi_size)"""
 
-#########################################################
-#                                                       #
-#  Lecture et affichage de la forme d'onde d'un signal  #
-#                                                       #
-#########################################################
+###########################################################
+#                                                         #
+#  Calcul de la matrice des distances entre deux signaux  #
+#                                                         #
+###########################################################
 
 def euclidean_distance(vect1, vect2):
     return np.sqrt(sum((vect1 - vect2) ** 2))
