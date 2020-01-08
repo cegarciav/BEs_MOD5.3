@@ -1,8 +1,8 @@
-import matplotlib.pyplot as plt
 import scipy.io.wavfile as wav
 import numpy as np
 import os
 from random import shuffle
+import pickle
 
 ################################################
 #                                              #
@@ -15,19 +15,9 @@ duree_trame = 0.030
 ordre = 10
 omega_v, omega_d, omega_h = 1, 1, 1
 
-#########################################################
-#                                                       #
-#  Lecture et affichage de la forme d'onde d'un signal  #
-#                                                       #
-#########################################################
-
-def forme_onde(name):
-    Fe, s = wav.read(path + name)
-    plt.title("Signal Wave...")
-    plt.plot(s)
-    plt.show()
-    
-"""forme_onde("0_jackson_0.wav")"""
+parametres = [duree_trame, ordre, omega_v, omega_d, omega_h]
+with open("parametres.txt", "wb") as fp:
+    pickle.dump(parametres, fp)
 
 #################################
 #                               #
@@ -78,10 +68,6 @@ def lpc_coeffs_list(signal, window_semi_size):
             break
     return lpc_list
 
-"""Fe, s = wav.read(path + "0_jackson_0.wav")
-window_semi_size = int(Fe * duree_trame / 2)
-coeffs_s = lpc_coeffs_list(s, window_semi_size)"""
-
 ###########################################################
 #                                                         #
 #  Calcul de la matrice des distances entre deux signaux  #
@@ -111,27 +97,17 @@ def matrice_distances(coeffs_1, coeffs_2):
     # on retourne la matrice des distances
     return distance_matrix
 
-"""Fe, s1 = wav.read(path + "0_jackson_0.wav")
-_, s2 = wav.read(path + "1_jackson_0.wav")
-window_semi_size = int(Fe * duree_trame / 2)
-coeffs_s1 = lpc_coeffs_list(s1, window_semi_size)
-coeffs_s2 = lpc_coeffs_list(s2, window_semi_size)
-matrice = matrice_distances(coeffs_s1, coeffs_s2)
-print(matrice)"""
-
 def distance_entre_signaux(s1, s2, window_semi_size):
     coeffs_1 = lpc_coeffs_list(s1, window_semi_size)
     coeffs_2 = lpc_coeffs_list(s2, window_semi_size)
     matrice = matrice_distances(coeffs_1, coeffs_2)
     return matrice[-1,-1] / (len(coeffs_1) + len(coeffs_2))
 
-#%%
-
-################################################################
-#                                                              #
-#  Classification par l'algorithme des k plus proches voisins  #
-#                                                              #
-################################################################
+##########################################################
+#                                                        #
+#  Calcul et enregistrement de la matrice des distances  #
+#                                                        #
+##########################################################
 
 def chargement_donnees(sample_size):
     file_names = os.listdir(path)
@@ -147,6 +123,12 @@ def chargement_donnees(sample_size):
     return Xapp, np.array(Yapp), Xtest, np.array(Ytest)
 
 Xapp, Yapp, Xtest, Ytest = chargement_donnees(20)
+with open("xapp.txt", "wb") as fp:
+    pickle.dump(Xapp, fp)
+with open("xtest.txt", "wb") as fp:
+    pickle.dump(Xtest, fp)
+np.save("yapp", Yapp)
+np.save("ytest", Ytest)
 
 def kppv_distances(Xtest, Xapp):
     Dist = np.zeros((len(Xtest), len(Xapp)))
@@ -161,29 +143,4 @@ def kppv_distances(Xtest, Xapp):
     return Dist
 
 Dist = kppv_distances(Xtest, Xapp)
-
-def kppv_predict(Dist, Yapp, K):
-    N = Dist.shape[0]
-    Ypred = np.zeros(N, dtype=int)
-    for i in range(N):
-        kppv = Yapp[Dist[i,:].argsort()[:K]]
-        Ypred[i] = np.argmax(np.bincount(kppv))
-    return Ypred
-
-def evaluation_classifieur(Ytest, Ypred):
-    return (Ytest == Ypred).sum() / Ytest.shape[0]
-
-def performance(K):
-    Ypred = kppv_predict(Dist, Yapp, K)
-    return evaluation_classifieur(Ytest, Ypred)
-
-"""les_k = [ k for k in range(1,10) ]
-les_accuracy = [ performance(k) for k in les_k ]
-
-plt.xlabel('K')
-plt.ylabel('Accuracy')
-plt.title('Accuracy(K)')
-plt.plot(les_k, les_accuracy, 'ro')
-
-index_max = np.asarray(les_accuracy).argsort()[-1]
-print('La meilleure Accuracy ' + str(les_accuracy[index_max]) + ' est atteinte pour K = ' + str(les_k[index_max]))"""
+np.save("dist", Dist)

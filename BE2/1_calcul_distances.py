@@ -1,8 +1,6 @@
 import matplotlib.pyplot as plt
 import scipy.io.wavfile as wav
 import numpy as np
-import os
-from random import shuffle
 
 ################################################
 #                                              #
@@ -111,79 +109,15 @@ def matrice_distances(coeffs_1, coeffs_2):
     # on retourne la matrice des distances
     return distance_matrix
 
-"""Fe, s1 = wav.read(path + "0_jackson_0.wav")
+
+""" TEST """
+
+Fe, s1 = wav.read(path + "0_jackson_0.wav")
 _, s2 = wav.read(path + "1_jackson_0.wav")
 window_semi_size = int(Fe * duree_trame / 2)
 coeffs_s1 = lpc_coeffs_list(s1, window_semi_size)
 coeffs_s2 = lpc_coeffs_list(s2, window_semi_size)
 matrice = matrice_distances(coeffs_s1, coeffs_s2)
-print(matrice)"""
-
-def distance_entre_signaux(s1, s2, window_semi_size):
-    coeffs_1 = lpc_coeffs_list(s1, window_semi_size)
-    coeffs_2 = lpc_coeffs_list(s2, window_semi_size)
-    matrice = matrice_distances(coeffs_1, coeffs_2)
-    return matrice[-1,-1] / (len(coeffs_1) + len(coeffs_2))
-
-#%%
-
-################################################################
-#                                                              #
-#  Classification par l'algorithme des k plus proches voisins  #
-#                                                              #
-################################################################
-
-def chargement_donnees(sample_size):
-    file_names = os.listdir(path)
-    shuffle(file_names)
-    file_names = file_names[:sample_size]
-    X = [ path + name for name in file_names ]
-    Y = [ int(name[0]) for name in file_names ]
-    delimitation = int(0.8*len(X))
-    Xapp = X[:delimitation]
-    Yapp = Y[:delimitation]
-    Xtest = X[delimitation:]
-    Ytest = Y[delimitation:]
-    return Xapp, np.array(Yapp), Xtest, np.array(Ytest)
-
-Xapp, Yapp, Xtest, Ytest = chargement_donnees(20)
-
-def kppv_distances(Xtest, Xapp):
-    Dist = np.zeros((len(Xtest), len(Xapp)))
-    for i in range(len(Xtest)):
-        Fe, s1 = wav.read(Xtest[i])
-        if (len(s1.shape) > 1) : s1 = s1[:,0]
-        window_semi_size = int(Fe * duree_trame / 2)
-        for j in range(len(Xapp)):
-            _, s2 = wav.read(Xapp[j])
-            if (len(s2.shape) > 1) : s2 = s2[:,0]
-            Dist[i,j] = distance_entre_signaux(s1, s2, window_semi_size)
-    return Dist
-
-Dist = kppv_distances(Xtest, Xapp)
-
-def kppv_predict(Dist, Yapp, K):
-    N = Dist.shape[0]
-    Ypred = np.zeros(N, dtype=int)
-    for i in range(N):
-        kppv = Yapp[Dist[i,:].argsort()[:K]]
-        Ypred[i] = np.argmax(np.bincount(kppv))
-    return Ypred
-
-def evaluation_classifieur(Ytest, Ypred):
-    return (Ytest == Ypred).sum() / Ytest.shape[0]
-
-def performance(K):
-    Ypred = kppv_predict(Dist, Yapp, K)
-    return evaluation_classifieur(Ytest, Ypred)
-
-"""les_k = [ k for k in range(1,10) ]
-les_accuracy = [ performance(k) for k in les_k ]
-
-plt.xlabel('K')
-plt.ylabel('Accuracy')
-plt.title('Accuracy(K)')
-plt.plot(les_k, les_accuracy, 'ro')
-
-index_max = np.asarray(les_accuracy).argsort()[-1]
-print('La meilleure Accuracy ' + str(les_accuracy[index_max]) + ' est atteinte pour K = ' + str(les_k[index_max]))"""
+distance_optimale = matrice[-1,-1] / (len(coeffs_s1) + len(coeffs_s2))
+#print(matrice)
+print('Distance optimale : ' + str(distance_optimale))
