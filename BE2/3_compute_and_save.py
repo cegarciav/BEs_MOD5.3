@@ -3,6 +3,9 @@ import numpy as np
 import os
 from random import shuffle
 import pickle
+import time
+
+start = time.time()
 
 ################################################
 #                                              #
@@ -10,6 +13,7 @@ import pickle
 #                                              #
 ################################################
 
+#path = "../spoken_digit_dataset/"
 path = "spoken_digit_dataset/"
 duree_trame = 0.030
 ordre = 10
@@ -109,7 +113,9 @@ def distance_entre_signaux(s1, s2, window_semi_size):
 #                                                        #
 ##########################################################
 
-def chargement_donnees(sample_size):
+sample_size = 150
+
+def chargement_donnees():
     file_names = os.listdir(path)
     shuffle(file_names)
     file_names = file_names[:sample_size]
@@ -122,7 +128,7 @@ def chargement_donnees(sample_size):
     Ytest = Y[delimitation:]
     return Xapp, np.array(Yapp), Xtest, np.array(Ytest)
 
-Xapp, Yapp, Xtest, Ytest = chargement_donnees(20)
+Xapp, Yapp, Xtest, Ytest = chargement_donnees()
 with open("xapp.txt", "wb") as fp:
     pickle.dump(Xapp, fp)
 with open("xtest.txt", "wb") as fp:
@@ -144,3 +150,12 @@ def kppv_distances(Xtest, Xapp):
 
 Dist = kppv_distances(Xtest, Xapp)
 np.save("dist", Dist)
+
+finish = time.time()
+minutes = int(finish - start) / 60
+print('Duree execution pour sample_size = '  + str(sample_size) +  ' : ' + str(minutes) + ' minutes !')
+print("\007")
+"""Duree execution pour sample_size = 50 : 1,166666666666667 minutes !
+Duree execution pour sample_size = 100 : 7.783333333333333 minutes !
+Duree execution pour sample_size = 150 : 13.016666666666667 minutes !
+Duree execution pour sample_size = 200 : 24.75 minutes !"""
