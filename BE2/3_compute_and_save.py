@@ -4,6 +4,7 @@ import os
 from random import shuffle
 import pickle
 import time
+import matplotlib.pyplot as plt
 
 start = time.time()
 
@@ -151,10 +152,38 @@ def kppv_distances(Xtest, Xapp):
 Dist = kppv_distances(Xtest, Xapp)
 np.save("dist", Dist)
 
+def kppv_predict(Dist, Yapp, K):
+    N = Dist.shape[0]
+    Ypred = np.zeros(N, dtype=int)
+    for i in range(N):
+        kppv = Yapp[Dist[i,:].argsort()[:K]]
+        Ypred[i] = np.argmax(np.bincount(kppv))
+    return Ypred
+
+def evaluation_classifieur(Ytest, Ypred):
+    return (Ytest == Ypred).sum() / Ytest.shape[0]
+
+def performance(K):
+    Ypred = kppv_predict(Dist, Yapp, K)
+    return evaluation_classifieur(Ytest, Ypred)
+
+les_k = [ k for k in range(1,20) ]
+les_accuracy = [ performance(k) for k in les_k ]
+
+plt.xlabel('K')
+plt.ylabel('Accuracy')
+plt.title('Accuracy(K) avec (ordre = ' + str(ordre) + ', oh = ' + str(omega_h) + ', od = ' + str(omega_d) + ', oh = ' + str(omega_h) + ')')
+plt.plot(les_k, les_accuracy, 'ro')
+plt.save("accuracies_ordre_" + str(ordre) + "_omega_" + str(omega_v))
+
+index_max = np.asarray(les_accuracy).argsort()[-1]
+print('La meilleure Accuracy ' + str(les_accuracy[index_max]) + ' est atteinte pour K = ' + str(les_k[index_max]))
+
 finish = time.time()
 minutes = int(finish - start) / 60
 print('Duree execution pour sample_size = '  + str(sample_size) +  ' : ' + str(minutes) + ' minutes !')
 print("\007")
+
 """Duree execution pour sample_size = 50 : 1,166666666666667 minutes !
 Duree execution pour sample_size = 100 : 7.783333333333333 minutes !
 Duree execution pour sample_size = 150 : 13.016666666666667 minutes !
