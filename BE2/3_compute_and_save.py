@@ -17,7 +17,7 @@ start = time.time()
 #path = "../spoken_digit_dataset/"
 path = "spoken_digit_dataset/"
 duree_trame = 0.030
-ordre = 10
+ordre = 20
 omega_v, omega_d, omega_h = 1, 1, 1
 
 parametres = [duree_trame, ordre, omega_v, omega_d, omega_h]
@@ -114,14 +114,34 @@ def distance_entre_signaux(s1, s2, window_semi_size):
 #                                                        #
 ##########################################################
 
-sample_size = 150
+sample_size = 200 # maximum 2000 (déconseillé sur pc ordinaire)
 
+def compte_occurences_par_chiffre(liste, chiffre):
+    compte = 0
+    for name in liste :
+        if int(name[0]) == chiffre :
+            compte += 1
+    return compte
+
+def compte_occurences_total(liste):
+    res = []
+    for chiffre in range(10):
+        res.append(compte_occurences_par_chiffre(liste, chiffre))
+    return res
+    
 def chargement_donnees():
     file_names = os.listdir(path)
-    shuffle(file_names)
-    file_names = file_names[:sample_size]
-    X = [ path + name for name in file_names ]
-    Y = [ int(name[0]) for name in file_names ]
+    
+    compte_par_chiffre = sample_size // 10
+    donnees = []
+    for chiffre in range(10):
+        names = [ name for name in file_names if int(name[0]) == chiffre]
+        shuffle(names)
+        donnees = donnees + names[:compte_par_chiffre]
+    shuffle(donnees)
+    
+    X = [ path + name for name in donnees ]
+    Y = [ int(name[0]) for name in donnees ]
     delimitation = int(0.8*len(X))
     Xapp = X[:delimitation]
     Yapp = Y[:delimitation]
@@ -174,7 +194,8 @@ plt.xlabel('K')
 plt.ylabel('Accuracy')
 plt.title('Accuracy(K) avec (ordre = ' + str(ordre) + ', oh = ' + str(omega_h) + ', od = ' + str(omega_d) + ', oh = ' + str(omega_h) + ')')
 plt.plot(les_k, les_accuracy, 'ro')
-plt.save("accuracies_ordre_" + str(ordre) + "_omega_" + str(omega_v))
+plt.savefig("accuracies_ordre_" + str(ordre) + "_omega_" + str(omega_v) + ".png")
+plt.close('all')
 
 index_max = np.asarray(les_accuracy).argsort()[-1]
 print('La meilleure Accuracy ' + str(les_accuracy[index_max]) + ' est atteinte pour K = ' + str(les_k[index_max]))
