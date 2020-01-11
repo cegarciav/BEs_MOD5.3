@@ -163,7 +163,7 @@ for i in range(9, 10):
                 if (len(s2.shape) > 1) : s2 = s2[:,0]
                 try:
                     Dist[i,j] = distance_entre_signaux(s1, s2, window_semi_size)
-                except ZeroDivisionError as e:
+                except ZeroDivisionError:
                     print(f"zero division error in r_vector for {Xtest[i]} and {Xapp[j]}")
                     Dist[i,j] = np.Inf
         return Dist
