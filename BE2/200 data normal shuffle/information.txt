@@ -1,0 +1,31 @@
+ordre = 5
+La meilleure Accuracy 0.2 est atteinte pour K = 19
+Duree execution pour sample_size = 200 : 11.266666666666667 minutes !
+
+ordre = 7
+La meilleure Accuracy 0.225 est atteinte pour K = 7
+Duree execution pour sample_size = 200 : 12.433333333333334 minutes !
+
+ordre = 9
+La meilleure Accuracy 0.35 est atteinte pour K = 1
+Duree execution pour sample_size = 200 : 14.683333333333334 minutes !
+
+ordre = 11
+La meilleure Accuracy 0.175 est atteinte pour K = 1
+Duree execution pour sample_size = 200 : 13.016666666666667 minutes !
+
+ordre = 13
+La meilleure Accuracy 0.275 est atteinte pour K = 2
+Duree execution pour sample_size = 200 : 18.516666666666666 minutes !
+
+ordre = 15
+La meilleure Accuracy 0.125 est atteinte pour K = 10
+Duree execution pour sample_size = 200 : 22.366666666666667 minutes !
+
+ordre = 17
+La meilleure Accuracy 0.125 est atteinte pour K = 19
+Duree execution pour sample_size = 200 : 19.2 minutes !
+
+ordre = 19
+La meilleure Accuracy 0.225 est atteinte pour K = 1
+Duree execution pour sample_size = 200 : 23.866666666666667 minutes !
